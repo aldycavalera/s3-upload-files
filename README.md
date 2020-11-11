@@ -2,11 +2,12 @@
 
 S3 Upload files is a NodeJS application for uploading files to S3 with ease.
 
-## Installation
+## Prequisite
 
 S3 Upload files requires [Node.js](https://nodejs.org/) v10+ to run.
 
-#### Local Development
+## Installation
+### Local Development
 
 Clone this repository
 
@@ -49,7 +50,7 @@ Start development server
 $ node ./server.js
 ```
 
-#### Deploy to Live Server
+### Deploy to Live Server
 
 To deploy this package to your own hosting provider, please see [DEPLOYMENT.md](https://github.com/aldycavalera/s3-upload-files/blob/main/DEPLOYMENT.md)
 
