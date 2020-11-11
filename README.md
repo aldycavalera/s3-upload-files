@@ -28,7 +28,7 @@ $ node ./server.js
 
 #### Deploy to Live Server
 
-To deploy this package to your own hosting provider, please see [deployment.md](https://github.com/aldycavalera/deployment.md)
+To deploy this package to your own hosting provider, please see [DEPLOYMENT.md](https://github.com/aldycavalera/s3-upload-files/blob/main/DEPLOYMENT.md)
 
 
 License
