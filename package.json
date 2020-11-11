@@ -1,0 +1,35 @@
+{
+  "name": "sawala-media-api",
+  "version": "0.0.1",
+  "description": "Sawala media API",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sawala-tech/sawala-media-api.git"
+  },
+  "keywords": [
+    "s3",
+    "media",
+    "upload",
+    "s3",
+    "upload"
+  ],
+  "author": "Aldy Cavalera <cavalera@sawala.co>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sawala-tech/sawala-media-api/issues"
+  },
+  "homepage": "https://github.com/sawala-tech/sawala-media-api#readme",
+  "dependencies": {
+    "aws-sdk": "^2.787.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mime": "^2.4.6",
+    "multer": "^1.4.2",
+    "sharp": "^0.26.2"
+  }
+}

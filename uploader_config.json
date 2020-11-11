@@ -1,0 +1,26 @@
+{
+    "sizes": {
+        "image": {
+            "thumbnail": {
+                "width": 150,
+                "height": 150
+            },
+            "medium": {
+                "width": 300
+            },
+            "large": {
+                "width": 1024
+            }
+        }
+    },
+    "extension": {
+        "image": {
+            "png": true,
+            "jpeg": false,
+            "jpg": false
+        },
+        "video": {
+            "mp4": true
+        }
+    }
+}
