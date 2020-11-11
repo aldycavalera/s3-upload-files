@@ -1,7 +1,7 @@
 {
-  "name": "s3-upload-files",
+  "name": "sawala-media-api",
   "version": "0.0.1",
-  "description": "Uploading files to S3",
+  "description": "Sawala media API",
   "main": "index.js",
   "private": true,
   "scripts": {
@@ -25,15 +25,12 @@
   },
   "homepage": "https://github.com/sawala-tech/sawala-media-api#readme",
   "dependencies": {
-    "@types/node": "^14.14.7",
-    "awesome-typescript-loader": "^5.2.1",
     "aws-sdk": "^2.787.0",
-    "child_process": "^1.0.2",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "mime": "^2.4.6",
     "multer": "^1.4.2",
-    "sharp": "^0.26.2",
-    "source-map-loader": "^1.1.2"
-  }
+    "sharp": "^0.26.2"
+  },
+  "devDependencies": {}
 }
