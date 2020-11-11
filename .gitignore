@@ -116,3 +116,8 @@ dist
 .pnp.*
 
 server.js
+.eslint
+.eslintrc
+.eslintrc.js
+.editorconfig
+.vscode
