@@ -2,10 +2,17 @@
 
 S3 Upload files is a NodeJS application for uploading files to S3 with ease.
 
-## Prequisite
+ ## Prequisite
 
-S3 Upload files requires [Node.js](https://nodejs.org/) v10+ to run.
-
+- S3 Upload files requires [Node.js](https://nodejs.org/) v10+ to run.
+- An configuration for s3 such as Secret Key, Key ID, Bucket name, etc
+  Create a new file called .env and paste. You may need to fill it with your own credentials
+  ```sh
+  PORT="3000"
+  accessKeyId=""
+  secretAccessKey=""
+  BUCKET_NAME=""
+  ```
 ## Installation
 ### Local Development
 
