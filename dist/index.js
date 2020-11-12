@@ -41,12 +41,24 @@ require("dotenv").config();
 var AWS = require("aws-sdk");
 var fs = require("fs");
 var crypto = require("crypto");
-var mime = require("mime/lite");
-var conf = require("./uploader_config.json");
+var conf = require("./default.config.json");
 var resizer_1 = require("./lib/resizer");
+var checker_1 = require("./lib/checker");
+var NOT_ALLOWED_EXTENSION = "Not allowed extension";
+var ACL = [
+    "private",
+    "public-read",
+    "public-read-write",
+    "aws-exec-read",
+    "authenticated-read",
+    "bucket-owner-read",
+    "bucket-owner-full-control",
+    "log-delivery-write",
+];
 var s3 = new AWS.S3({
-    accessKeyId: process.env.accessKeyId,
-    secretAccessKey: process.env.secretAccessKey,
+    accessKeyId: process.env.ACCESS_KEY_ID,
+    secretAccessKey: process.env.SECRET_ACCESS_KEY,
+    region: process.env.REGION,
 });
 var Uploader = (function () {
     function Uploader() {
@@ -74,7 +86,7 @@ var Uploader = (function () {
         this.uploadPart = function (file) {
             var stream = fs.createReadStream(file.path);
             var params = {
-                ACL: "public-read",
+                ACL: conf.ACL,
                 Bucket: process.env.BUCKET_NAME,
                 Body: stream,
                 Key: file.originalname,
@@ -90,9 +102,16 @@ var Uploader = (function () {
                 console.log("upload ERROR", file, error);
             }
         };
-        this.doUpload = function (file, buffer) {
+        this.doUpload = function (file, buffer, folder) {
             if (buffer === void 0) { buffer = null; }
+            if (folder === void 0) { folder = false; }
             var params = {};
+            if (folder !== "" && folder !== false) {
+                folder = folder + "/";
+            }
+            else {
+                folder = "";
+            }
             if (!buffer) {
                 var FILES = file;
                 var path = FILES.path;
@@ -100,9 +119,9 @@ var Uploader = (function () {
                     .createHash("md5")
                     .update(FILES.originalname)
                     .digest("hex");
-                fileName = fileName + ("." + FILES.originalname.split(".").pop());
+                fileName = "" + folder + fileName + "." + FILES.originalname.split(".").pop();
                 params = {
-                    ACL: "public-read",
+                    ACL: conf.ACL,
                     Bucket: process.env.BUCKET_NAME,
                     Body: fs.createReadStream(path),
                     Key: "" + fileName,
@@ -110,27 +129,34 @@ var Uploader = (function () {
             }
             else {
                 params = {
-                    ACL: "public-read",
+                    ACL: conf.ACL,
                     Bucket: process.env.BUCKET_NAME,
                     Body: buffer.Body,
-                    Key: buffer.Key,
+                    Key: folder + buffer.Key,
                 };
             }
             return s3.upload(params).promise();
         };
         this.post = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var promises, i, file, _a, _b, _i, key, resized;
+            var promises, folder, i, file, _a, _b, _i, key, resized;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         promises = [];
+                        folder = "";
+                        folder = checker_1.query(req.query, "folder");
+                        conf.image.bulk_resize = checker_1.query(req.query, "bulk_image");
+                        if (checker_1.query(req.query, "ACL") != false &&
+                            ACL.includes(checker_1.query(req.query, "ACL"))) {
+                            conf.ACL = checker_1.query(req.query, "ACL");
+                        }
                         i = 0;
                         _c.label = 1;
                     case 1:
                         if (!(i < req.files.length)) return [3, 8];
                         file = req.files[i];
-                        if (!(mime.getExtension(file.mimetype) in conf.extension.image &&
-                            conf.extension.image[mime.getExtension(file.mimetype)] === true)) return [3, 6];
+                        if (!checker_1.checkExtensionIf(file.mimetype, "image")) return [3, 6];
+                        if (!(conf.image.bulk_resize != false)) return [3, 5];
                         _a = [];
                         for (_b in conf.sizes.image)
                             _a.push(_b);
@@ -140,19 +166,24 @@ var Uploader = (function () {
                         if (!(_i < _a.length)) return [3, 5];
                         key = _a[_i];
                         if (!conf.sizes.image.hasOwnProperty(key)) return [3, 4];
-                        return [4, this.Resizer.resizeImage()(file, conf.sizes.image[key], key)];
+                        return [4, this.Resizer.resizeImage(file, conf.sizes.image[key], key)];
                     case 3:
                         resized = _c.sent();
-                        promises.push(this.doUpload(file, resized));
+                        promises.push(this.doUpload(file, resized, folder));
                         _c.label = 4;
                     case 4:
                         _i++;
                         return [3, 2];
                     case 5:
-                        promises.push(this.doUpload(file));
+                        promises.push(this.doUpload(file, null, folder));
                         return [3, 7];
                     case 6:
-                        promises.push(this.uploadPart(file));
+                        if (checker_1.checkExtensionIf(file.mimetype, "video")) {
+                            promises.push(this.uploadPart(file));
+                        }
+                        else {
+                            return [2, res.end(NOT_ALLOWED_EXTENSION)];
+                        }
                         _c.label = 7;
                     case 7:
                         i++;

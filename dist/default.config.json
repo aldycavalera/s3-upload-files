@@ -1,0 +1,30 @@
+{
+  "ACL": "public-read",
+  "image": {
+    "bulk_resize": false
+  },
+  "sizes": {
+    "image": {
+      "thumbnail": {
+        "width": 150,
+        "height": 150
+      },
+      "medium": {
+        "width": 300
+      },
+      "large": {
+        "width": 1024
+      }
+    }
+  },
+  "extension": {
+    "image": {
+      "png": true,
+      "jpeg": true,
+      "jpg": true
+    },
+    "video": {
+      "mp4": true
+    }
+  }
+}

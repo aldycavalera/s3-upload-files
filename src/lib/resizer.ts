@@ -7,7 +7,7 @@ interface ImageInterface {
 
 export class Resizer implements ImageInterface {
   // resize image
-  resizeImage = async (file, size: object, sizeType = "full") => {
+  resizeImage = async (file: any, size: object, sizeType = "full") => {
     var data = await sharp(file.path)
       .resize(size)
       .withMetadata()

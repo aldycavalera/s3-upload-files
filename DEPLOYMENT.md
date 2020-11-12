@@ -10,8 +10,8 @@
 ```sh
 # PORT 8080 is required to make our application running on Apache
 PORT="8080"
-accessKeyId=""
-secretAccessKey=""
+ACCESS_KEY_ID=""
+SECRET_ACCESS_KEY=""
 BUCKET_NAME=""
 ```
 

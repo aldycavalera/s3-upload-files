@@ -10,9 +10,10 @@ S3 Upload files is a NodeJS application for uploading files to S3 with ease.
 
   ```sh
   PORT="3000"
-  accessKeyId=""
-  secretAccessKey=""
-  BUCKET_NAME=""
+  ACCESS_KEY_ID="ACCESS_KEY_ID"
+  SECRET_ACCESS_KEY="SECRET_ACCESS_KEY"
+  BUCKET_NAME="BUCKET_NAME"
+  REGION="ap-southeast-1"
   ```
 
 ## Installation
