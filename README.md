@@ -36,12 +36,12 @@ $npm install
 Create a new file inside of s3-upload-files/dist folder, name it to server.js or whatever you want. Then create your own development server by pasting this code:
 
 ```sh
-import * as dotenv from "dotenv";
+const dotenv = require("dotenv");
 dotenv.config();
-import * as express from "express";
-import { Uploader } from "./index";
+const express = require("express");
+const index = require("./index");
 
-const upload = new Uploader();
+const upload = new index.Uploader();
 const app = express();
 const port = process.env.PORT;
 const bodyPraser = require("body-parser");
