@@ -84,6 +84,9 @@ export class Uploader {
 
     try {
       return s3.upload(params, options).promise();
+      // return s3.upload(params, options).on('httpUploadProgress', function(evt) {
+      //   console.log("Uploaded : " + (evt.loaded * 100) / evt.total +'%');
+      // }).promise();
     } catch (error) {
       console.log("upload ERROR", file, error);
     }
@@ -172,6 +175,7 @@ export class Uploader {
     }
     Promise.all(promises)
       .then(function (data) {
+        // console.log(data)
         res.send(data);
       })
       .catch(function (err) {

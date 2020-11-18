@@ -1,16 +1,15 @@
 {
-  "name": "s3-upload-files",
-  "version": "0.0.1",
+  "name": "aws-file-upload",
+  "version": "0.1.38",
   "description": "Uploading files to S3",
   "main": "index.js",
-  "private": true,
   "scripts": {
     "dev": "node ./dist/server.js",
     "build": "tsc"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sawala-tech/sawala-media-api.git"
+    "url": "git+https://github.com/aldycavalera/s3-upload-files.git"
   },
   "keywords": [
     "s3",
@@ -22,9 +21,9 @@
   "author": "Aldy Cavalera <cavalera@sawala.co>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sawala-tech/sawala-media-api/issues"
+    "url": "https://github.com/aldycavalera/s3-upload-files/issues"
   },
-  "homepage": "https://github.com/sawala-tech/sawala-media-api#readme",
+  "homepage": "https://github.com/aldycavalera/s3-upload-files#readme",
   "dependencies": {
     "@types/node": "^14.14.7",
     "awesome-typescript-loader": "^5.2.1",
@@ -36,5 +35,6 @@
     "multer": "^1.4.2",
     "sharp": "^0.26.2",
     "source-map-loader": "^1.1.2"
-  }
+  },
+  "devDependencies": {}
 }
