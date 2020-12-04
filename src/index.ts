@@ -76,13 +76,7 @@ export class Uploader {
     ffmpeg.setFfmpegPath(ffmpegPath)
     ffmpeg.setFfprobePath(ffprobePath)
 
-    const availableReso = {
-      240: '426x240',
-      360: '640x360',
-      480: '854x480',
-      720: '1280x720',
-      1080: '1920x1080'
-    }
+    const availableReso = conf.resolutions
     const getVideoInfo = require('get-video-info')
 
     return await getVideoInfo(file.path).then(info => {
@@ -92,6 +86,7 @@ export class Uploader {
         .update(file.originalname)
         .digest("hex");
       const ext = info.format.filename.split('.').pop()
+      
       for (const key in availableReso) {
         if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
           /** JIKA video kurang dari resolusi yang di upload */
@@ -99,6 +94,8 @@ export class Uploader {
             resize.videoCodec('libx264')
                   .output(`tmp/${fileName}-${key}p.${ext}`)
                   .size(availableReso[key])
+          } else {
+            delete conf.resolutions[key]
           }
         }
       }
@@ -227,7 +224,6 @@ export class Uploader {
     }
     Promise.all(promises)
       .then(function (data) {
-        res.send(data);
         // jika module video resize on upload
         if(query(req.query, "autoresize") === 'true') {
           // maka hapus video yang ada di tmp
@@ -236,7 +232,6 @@ export class Uploader {
             try {
               for (const key in data) {
                 if (Object.prototype.hasOwnProperty.call(data, key)) {
-                  // console.log(data[key])
                   await fs.unlink('tmp/'+data[key]['Key']);
                 }
               }
@@ -244,6 +239,12 @@ export class Uploader {
               console.log(e);
             }
           })();
+          res.send({
+            resolutions: conf.resolutions,
+            data: data
+          });
+        } else {
+          res.send(data);
         }
       })
       .catch(function (err) {

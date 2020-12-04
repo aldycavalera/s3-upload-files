@@ -93,13 +93,7 @@ var Uploader = (function () {
                         ffmpeg = require('fluent-ffmpeg');
                         ffmpeg.setFfmpegPath(ffmpegPath);
                         ffmpeg.setFfprobePath(ffprobePath);
-                        availableReso = {
-                            240: '426x240',
-                            360: '640x360',
-                            480: '854x480',
-                            720: '1280x720',
-                            1080: '1920x1080'
-                        };
+                        availableReso = conf.resolutions;
                         getVideoInfo = require('get-video-info');
                         return [4, getVideoInfo(file.path).then(function (info) {
                                 var resize = ffmpeg(file.path);
@@ -114,6 +108,9 @@ var Uploader = (function () {
                                             resize.videoCodec('libx264')
                                                 .output("tmp/" + fileName + "-" + key + "p." + ext)
                                                 .size(availableReso[key]);
+                                        }
+                                        else {
+                                            delete conf.resolutions[key];
                                         }
                                     }
                                 }
@@ -245,7 +242,6 @@ var Uploader = (function () {
                         Promise.all(promises)
                             .then(function (data) {
                             var _this = this;
-                            res.send(data);
                             if (checker_1.query(req.query, "autoresize") === 'true') {
                                 var fs_1 = require('fs').promises;
                                 (function () { return __awaiter(_this, void 0, void 0, function () {
@@ -279,6 +275,13 @@ var Uploader = (function () {
                                         }
                                     });
                                 }); })();
+                                res.send({
+                                    resolutions: conf.resolutions,
+                                    data: data
+                                });
+                            }
+                            else {
+                                res.send(data);
                             }
                         })
                             .catch(function (err) {
