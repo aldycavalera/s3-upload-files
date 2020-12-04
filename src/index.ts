@@ -6,6 +6,8 @@ import * as mime from "mime/lite";
 const conf = require("./default.config.json");
 import { Resizer } from "./lib/resizer";
 import { checkExtensionIf, query } from "./lib/checker";
+import { type } from "os";
+import { exit } from "process";
 
 const NOT_ALLOWED_EXTENSION: string = "Not allowed extension";
 
@@ -62,6 +64,47 @@ export class Uploader {
       }
     });
   };
+
+  /**
+   * Upload with autoresize ON
+   * @param file
+   */
+  uploadWithResizer = async (file: any) => {
+    const ffprobePath = require('@ffprobe-installer/ffprobe').path;
+    const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+    const ffmpeg = require('fluent-ffmpeg')
+    ffmpeg.setFfmpegPath(ffmpegPath)
+    ffmpeg.setFfprobePath(ffprobePath)
+
+    const availableReso = {
+      240: '426x240',
+      360: '640x360',
+      480: '854x480',
+      720: '1280x720',
+      1080: '1920x1080'
+    }
+    const getVideoInfo = require('get-video-info')
+
+    return await getVideoInfo(file.path).then(info => {
+      let resize = ffmpeg(file.path)
+      let fileName = crypto
+        .createHash("md5")
+        .update(file.originalname)
+        .digest("hex");
+      const ext = info.format.filename.split('.').pop()
+      for (const key in availableReso) {
+        if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
+          /** JIKA video kurang dari resolusi yang di upload */
+          if(key <= info.streams[0].width) {
+            resize.output(`tmp/${fileName}-${key}p.${ext}`)
+            .size(availableReso[key])
+          }
+        }
+      }
+      resize.run()
+      return resize._outputs
+    })
+  }
 
   /**
    * Upload part for video
@@ -133,11 +176,6 @@ export class Uploader {
   post = async (req: any, res: any) => {
     var promises: Array<object> = [];
     var folder: string = "";
-    // check if user specify the bucket name
-    // if (req.query.bucket !== undefined) {
-    //   process.env.BUCKET_NAME = req.query.bucket;
-    //   checkBucket(req.query.bucket);
-    // }
 
     /** Checking each query */
     folder = query(req.query, "folder");
@@ -150,36 +188,73 @@ export class Uploader {
     }
     /** end checking */
 
-    for (var i = 0; i < req.files.length; i++) {
-      var file = req.files[i];
-      if (checkExtensionIf(file.mimetype, "image")) {
-        if (conf.image.bulk_resize != false) {
-          for (const key in conf.sizes.image) {
-            if (conf.sizes.image.hasOwnProperty(key)) {
-              var resized = await this.Resizer.resizeImage(
-                file,
-                conf.sizes.image[key],
-                key
-              );
-              promises.push(this.doUpload(file, resized, folder));
+    /**
+     * Check if User wanted to resize the video
+     */
+    if(query(req.query, "autoresize") === 'true') {
+      const resizeData = await this.uploadWithResizer(req.files[0])
+      for (let index = 0; index < resizeData.length; index++) {
+        promises.push(this.uploadPart({
+          originalname: resizeData[index].target.split('/').pop(),
+          path: resizeData[index].target
+        }));
+      }
+    } else {
+      for (var i = 0; i < req.files.length; i++) {
+        var file = req.files[i];
+        if (checkExtensionIf(file.mimetype, "image")) {
+          if (conf.image.bulk_resize != false) {
+            for (const key in conf.sizes.image) {
+              if (conf.sizes.image.hasOwnProperty(key)) {
+                var resized = await this.Resizer.resizeImage(
+                  file,
+                  conf.sizes.image[key],
+                  key
+                );
+                promises.push(this.doUpload(file, resized, folder));
+              }
             }
           }
+          // original files will always uploaded
+          promises.push(this.doUpload(file, null, folder));
+        } else if (checkExtensionIf(file.mimetype, "video")) {
+          promises.push(this.uploadPart(file));
+        } else {
+          return res.end(NOT_ALLOWED_EXTENSION);
         }
-        // original files will always uploaded
-        promises.push(this.doUpload(file, null, folder));
-      } else if (checkExtensionIf(file.mimetype, "video")) {
-        promises.push(this.uploadPart(file));
-      } else {
-        return res.end(NOT_ALLOWED_EXTENSION);
       }
     }
     Promise.all(promises)
       .then(function (data) {
-        // console.log(data)
         res.send(data);
+        // jika module video resize on upload
+        if(query(req.query, "autoresize") === 'true') {
+          // maka hapus video yang ada di tmp
+          const fs = require('fs').promises;
+          (async () => {
+            try {
+              for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                  // console.log(data[key])
+                  await fs.unlink('tmp/'+data[key]['Key']);
+                }
+              }
+            } catch (e) {
+              console.log(e);
+            }
+          })();
+        }
       })
       .catch(function (err) {
-        res.send(err.stack);
+        // jika module video resize on upload
+        if(query(req.query, "autoresize") === 'true') {
+          res.send({
+            code: 102,
+            message: 'Processing video, it may take a minute or two'
+          });
+        } else {
+          res.send(err.stack);
+        }
       });
   };
 

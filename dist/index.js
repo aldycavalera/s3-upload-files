@@ -83,6 +83,46 @@ var Uploader = (function () {
                 }
             });
         };
+        this.uploadWithResizer = function (file) { return __awaiter(_this, void 0, void 0, function () {
+            var ffprobePath, ffmpegPath, ffmpeg, availableReso, getVideoInfo;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ffprobePath = require('@ffprobe-installer/ffprobe').path;
+                        ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+                        ffmpeg = require('fluent-ffmpeg');
+                        ffmpeg.setFfmpegPath(ffmpegPath);
+                        ffmpeg.setFfprobePath(ffprobePath);
+                        availableReso = {
+                            240: '426x240',
+                            360: '640x360',
+                            480: '854x480',
+                            720: '1280x720',
+                            1080: '1920x1080'
+                        };
+                        getVideoInfo = require('get-video-info');
+                        return [4, getVideoInfo(file.path).then(function (info) {
+                                var resize = ffmpeg(file.path);
+                                var fileName = crypto
+                                    .createHash("md5")
+                                    .update(file.originalname)
+                                    .digest("hex");
+                                var ext = info.format.filename.split('.').pop();
+                                for (var key in availableReso) {
+                                    if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
+                                        if (key <= info.streams[0].width) {
+                                            resize.output("tmp/" + fileName + "-" + key + "p." + ext)
+                                                .size(availableReso[key]);
+                                        }
+                                    }
+                                }
+                                resize.run();
+                                return resize._outputs;
+                            })];
+                    case 1: return [2, _a.sent()];
+                }
+            });
+        }); };
         this.uploadPart = function (file) {
             var stream = fs.createReadStream(file.path);
             var params = {
@@ -138,7 +178,7 @@ var Uploader = (function () {
             return s3.upload(params).promise();
         };
         this.post = function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-            var promises, folder, i, file, _a, _b, _i, key, resized;
+            var promises, folder, resizeData, index, i, file, _a, _b, _i, key, resized;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
@@ -150,51 +190,106 @@ var Uploader = (function () {
                             ACL.includes(checker_1.query(req.query, "ACL"))) {
                             conf.ACL = checker_1.query(req.query, "ACL");
                         }
-                        i = 0;
-                        _c.label = 1;
+                        if (!(checker_1.query(req.query, "autoresize") === 'true')) return [3, 2];
+                        return [4, this.uploadWithResizer(req.files[0])];
                     case 1:
-                        if (!(i < req.files.length)) return [3, 8];
+                        resizeData = _c.sent();
+                        for (index = 0; index < resizeData.length; index++) {
+                            promises.push(this.uploadPart({
+                                originalname: resizeData[index].target.split('/').pop(),
+                                path: resizeData[index].target
+                            }));
+                        }
+                        return [3, 10];
+                    case 2:
+                        i = 0;
+                        _c.label = 3;
+                    case 3:
+                        if (!(i < req.files.length)) return [3, 10];
                         file = req.files[i];
-                        if (!checker_1.checkExtensionIf(file.mimetype, "image")) return [3, 6];
-                        if (!(conf.image.bulk_resize != false)) return [3, 5];
+                        if (!checker_1.checkExtensionIf(file.mimetype, "image")) return [3, 8];
+                        if (!(conf.image.bulk_resize != false)) return [3, 7];
                         _a = [];
                         for (_b in conf.sizes.image)
                             _a.push(_b);
                         _i = 0;
-                        _c.label = 2;
-                    case 2:
-                        if (!(_i < _a.length)) return [3, 5];
-                        key = _a[_i];
-                        if (!conf.sizes.image.hasOwnProperty(key)) return [3, 4];
-                        return [4, this.Resizer.resizeImage(file, conf.sizes.image[key], key)];
-                    case 3:
-                        resized = _c.sent();
-                        promises.push(this.doUpload(file, resized, folder));
                         _c.label = 4;
                     case 4:
-                        _i++;
-                        return [3, 2];
+                        if (!(_i < _a.length)) return [3, 7];
+                        key = _a[_i];
+                        if (!conf.sizes.image.hasOwnProperty(key)) return [3, 6];
+                        return [4, this.Resizer.resizeImage(file, conf.sizes.image[key], key)];
                     case 5:
-                        promises.push(this.doUpload(file, null, folder));
-                        return [3, 7];
+                        resized = _c.sent();
+                        promises.push(this.doUpload(file, resized, folder));
+                        _c.label = 6;
                     case 6:
+                        _i++;
+                        return [3, 4];
+                    case 7:
+                        promises.push(this.doUpload(file, null, folder));
+                        return [3, 9];
+                    case 8:
                         if (checker_1.checkExtensionIf(file.mimetype, "video")) {
                             promises.push(this.uploadPart(file));
                         }
                         else {
                             return [2, res.end(NOT_ALLOWED_EXTENSION)];
                         }
-                        _c.label = 7;
-                    case 7:
+                        _c.label = 9;
+                    case 9:
                         i++;
-                        return [3, 1];
-                    case 8:
+                        return [3, 3];
+                    case 10:
                         Promise.all(promises)
                             .then(function (data) {
+                            var _this = this;
                             res.send(data);
+                            if (checker_1.query(req.query, "autoresize") === 'true') {
+                                var fs_1 = require('fs').promises;
+                                (function () { return __awaiter(_this, void 0, void 0, function () {
+                                    var _a, _b, _i, key, e_1;
+                                    return __generator(this, function (_c) {
+                                        switch (_c.label) {
+                                            case 0:
+                                                _c.trys.push([0, 5, , 6]);
+                                                _a = [];
+                                                for (_b in data)
+                                                    _a.push(_b);
+                                                _i = 0;
+                                                _c.label = 1;
+                                            case 1:
+                                                if (!(_i < _a.length)) return [3, 4];
+                                                key = _a[_i];
+                                                if (!Object.prototype.hasOwnProperty.call(data, key)) return [3, 3];
+                                                return [4, fs_1.unlink('tmp/' + data[key]['Key'])];
+                                            case 2:
+                                                _c.sent();
+                                                _c.label = 3;
+                                            case 3:
+                                                _i++;
+                                                return [3, 1];
+                                            case 4: return [3, 6];
+                                            case 5:
+                                                e_1 = _c.sent();
+                                                console.log(e_1);
+                                                return [3, 6];
+                                            case 6: return [2];
+                                        }
+                                    });
+                                }); })();
+                            }
                         })
                             .catch(function (err) {
-                            res.send(err.stack);
+                            if (checker_1.query(req.query, "autoresize") === 'true') {
+                                res.send({
+                                    code: 102,
+                                    message: 'Processing video, it may take a minute or two'
+                                });
+                            }
+                            else {
+                                res.send(err.stack);
+                            }
                         });
                         return [2];
                 }
