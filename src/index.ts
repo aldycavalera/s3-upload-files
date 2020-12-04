@@ -242,7 +242,7 @@ export class Uploader {
                 console.log(e);
               }
           })();
-          }, 1000);
+          }, 30000);
           res.send({
             resolutions: conf.resolutions,
             data: data

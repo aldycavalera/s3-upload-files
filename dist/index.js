@@ -277,7 +277,7 @@ var Uploader = (function () {
                                             }
                                         });
                                     }); })();
-                                }, 1000);
+                                }, 30000);
                                 res.send({
                                     resolutions: conf.resolutions,
                                     data: data
