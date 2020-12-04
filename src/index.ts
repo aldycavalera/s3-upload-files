@@ -96,8 +96,9 @@ export class Uploader {
         if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
           /** JIKA video kurang dari resolusi yang di upload */
           if(key <= info.streams[0].width) {
-            resize.output(`tmp/${fileName}-${key}p.${ext}`)
-            .size(availableReso[key])
+            resize.videoCodec('libx264')
+                  .output(`tmp/${fileName}-${key}p.${ext}`)
+                  .size(availableReso[key])
           }
         }
       }

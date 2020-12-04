@@ -111,7 +111,8 @@ var Uploader = (function () {
                                 for (var key in availableReso) {
                                     if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
                                         if (key <= info.streams[0].width) {
-                                            resize.output("tmp/" + fileName + "-" + key + "p." + ext)
+                                            resize.videoCodec('libx264')
+                                                .output("tmp/" + fileName + "-" + key + "p." + ext)
                                                 .size(availableReso[key]);
                                         }
                                     }
