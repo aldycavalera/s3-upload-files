@@ -1,7 +1,7 @@
 {
   "ACL": "public-read",
   "image": {
-    "bulk_resize": false
+    "bulk_resize": true
   },
   "sizes": {
     "image": {
