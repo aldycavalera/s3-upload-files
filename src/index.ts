@@ -80,6 +80,7 @@ export class Uploader {
     const getVideoInfo = require('get-video-info')
 
     return await getVideoInfo(file.path).then(info => {
+      // console.log(info)
       let resize = ffmpeg(file.path)
       let fileName = crypto
         .createHash("md5")
@@ -92,6 +93,7 @@ export class Uploader {
           /** JIKA video kurang dari resolusi yang di upload */
           if(key <= info.streams[0].width) {
             resize.videoCodec('libx264')
+                  .format('mp4')
                   .output(`tmp/${fileName}-${key}p.${ext}`)
                   .size(availableReso[key])
           } else {
@@ -228,17 +230,19 @@ export class Uploader {
         if(query(req.query, "autoresize") === 'true') {
           // maka hapus video yang ada di tmp
           const fs = require('fs').promises;
-          (async () => {
-            try {
-              for (const key in data) {
-                if (Object.prototype.hasOwnProperty.call(data, key)) {
-                  await fs.unlink('tmp/'+data[key]['Key']);
+          setTimeout(() => {
+            (async () => {
+              try {
+                for (const key in data) {
+                  if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    await fs.unlink('tmp/'+data[key]['Key']);
+                  }
                 }
+              } catch (e) {
+                console.log(e);
               }
-            } catch (e) {
-              console.log(e);
-            }
           })();
+          }, 1000);
           res.send({
             resolutions: conf.resolutions,
             data: data

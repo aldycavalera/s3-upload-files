@@ -106,6 +106,7 @@ var Uploader = (function () {
                                     if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
                                         if (key <= info.streams[0].width) {
                                             resize.videoCodec('libx264')
+                                                .format('mp4')
                                                 .output("tmp/" + fileName + "-" + key + "p." + ext)
                                                 .size(availableReso[key]);
                                         }
@@ -244,37 +245,39 @@ var Uploader = (function () {
                             var _this = this;
                             if (checker_1.query(req.query, "autoresize") === 'true') {
                                 var fs_1 = require('fs').promises;
-                                (function () { return __awaiter(_this, void 0, void 0, function () {
-                                    var _a, _b, _i, key, e_1;
-                                    return __generator(this, function (_c) {
-                                        switch (_c.label) {
-                                            case 0:
-                                                _c.trys.push([0, 5, , 6]);
-                                                _a = [];
-                                                for (_b in data)
-                                                    _a.push(_b);
-                                                _i = 0;
-                                                _c.label = 1;
-                                            case 1:
-                                                if (!(_i < _a.length)) return [3, 4];
-                                                key = _a[_i];
-                                                if (!Object.prototype.hasOwnProperty.call(data, key)) return [3, 3];
-                                                return [4, fs_1.unlink('tmp/' + data[key]['Key'])];
-                                            case 2:
-                                                _c.sent();
-                                                _c.label = 3;
-                                            case 3:
-                                                _i++;
-                                                return [3, 1];
-                                            case 4: return [3, 6];
-                                            case 5:
-                                                e_1 = _c.sent();
-                                                console.log(e_1);
-                                                return [3, 6];
-                                            case 6: return [2];
-                                        }
-                                    });
-                                }); })();
+                                setTimeout(function () {
+                                    (function () { return __awaiter(_this, void 0, void 0, function () {
+                                        var _a, _b, _i, key, e_1;
+                                        return __generator(this, function (_c) {
+                                            switch (_c.label) {
+                                                case 0:
+                                                    _c.trys.push([0, 5, , 6]);
+                                                    _a = [];
+                                                    for (_b in data)
+                                                        _a.push(_b);
+                                                    _i = 0;
+                                                    _c.label = 1;
+                                                case 1:
+                                                    if (!(_i < _a.length)) return [3, 4];
+                                                    key = _a[_i];
+                                                    if (!Object.prototype.hasOwnProperty.call(data, key)) return [3, 3];
+                                                    return [4, fs_1.unlink('tmp/' + data[key]['Key'])];
+                                                case 2:
+                                                    _c.sent();
+                                                    _c.label = 3;
+                                                case 3:
+                                                    _i++;
+                                                    return [3, 1];
+                                                case 4: return [3, 6];
+                                                case 5:
+                                                    e_1 = _c.sent();
+                                                    console.log(e_1);
+                                                    return [3, 6];
+                                                case 6: return [2];
+                                            }
+                                        });
+                                    }); })();
+                                }, 1000);
                                 res.send({
                                     resolutions: conf.resolutions,
                                     data: data

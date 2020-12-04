@@ -120,3 +120,4 @@ server.js
 .eslintrc.js
 .editorconfig
 .vscode
+tmp
