@@ -45,7 +45,7 @@ export class Uploader {
       },
     });
 
-    let upload = multer({ storage: storage, limits: { fileSize: 100000000 } });
+    let upload = multer({ storage: storage, limits: { fileSize: 2000 * 1024 * 1024 } });
 
     app.post("/upload", upload.array("files"), this.post);
   };
@@ -80,18 +80,21 @@ export class Uploader {
     const getVideoInfo = require('get-video-info')
 
     return await getVideoInfo(file.path).then(info => {
-      // console.log(info)
       let resize = ffmpeg(file.path)
       let fileName = crypto
         .createHash("md5")
         .update(file.originalname)
         .digest("hex");
       const ext = info.format.filename.split('.').pop()
-      
+      // Copy default uploaded file
+      fs.copyFile(file.path, `tmp/${fileName}-${info.streams[0].height}p.${ext}`, (err) => {
+        if (err) throw err;
+        console.log('Original file has been copied');
+      });
       for (const key in availableReso) {
         if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
           /** JIKA video kurang dari resolusi yang di upload */
-          if(key <= info.streams[0].width) {
+          if(key < info.streams[0].height) {
             resize.videoCodec('libx264')
                   .format('mp4')
                   .output(`tmp/${fileName}-${key}p.${ext}`)
@@ -101,6 +104,11 @@ export class Uploader {
           }
         }
       }
+      console.time()
+      resize.on('end', function(stdout, stderr){
+        console.log('Done Processing!')
+        console.timeEnd()
+      })
       resize.run()
       return resize._outputs
     })

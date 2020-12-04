@@ -70,7 +70,7 @@ var Uploader = (function () {
                     cb(null, file.originalname);
                 },
             });
-            var upload = multer({ storage: storage, limits: { fileSize: 100000000 } });
+            var upload = multer({ storage: storage, limits: { fileSize: 2000 * 1024 * 1024 } });
             app.post("/upload", upload.array("files"), _this.post);
         };
         this.checkBucket = function (name) {
@@ -102,9 +102,14 @@ var Uploader = (function () {
                                     .update(file.originalname)
                                     .digest("hex");
                                 var ext = info.format.filename.split('.').pop();
+                                fs.copyFile(file.path, "tmp/" + fileName + "-" + info.streams[0].height + "p." + ext, function (err) {
+                                    if (err)
+                                        throw err;
+                                    console.log('Original file has been copied');
+                                });
                                 for (var key in availableReso) {
                                     if (Object.prototype.hasOwnProperty.call(availableReso, key)) {
-                                        if (key <= info.streams[0].width) {
+                                        if (key < info.streams[0].height) {
                                             resize.videoCodec('libx264')
                                                 .format('mp4')
                                                 .output("tmp/" + fileName + "-" + key + "p." + ext)
@@ -115,6 +120,11 @@ var Uploader = (function () {
                                         }
                                     }
                                 }
+                                console.time();
+                                resize.on('end', function (stdout, stderr) {
+                                    console.log('Done Processing!');
+                                    console.timeEnd();
+                                });
                                 resize.run();
                                 return resize._outputs;
                             })];
