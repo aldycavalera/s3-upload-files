@@ -45,7 +45,7 @@ export class Uploader {
       },
     });
 
-    let upload = multer({ storage: storage, limits: { fileSize: 2000 * 1024 * 1024 } });
+    let upload = multer({ storage: storage, limits: { fileSize: 1000 * 1024 * 1024 } });
 
     app.post("/upload", upload.array("files"), this.post);
   };
@@ -185,6 +185,9 @@ export class Uploader {
     var promises: Array<object> = [];
     var folder: string = "";
 
+    // timeout 10minutes
+    req.socket.setTimeout(10 * 60 * 1000);
+
     /** Checking each query */
     folder = query(req.query, "folder");
     conf.image.bulk_resize = query(req.query, "bulk_image");
@@ -201,7 +204,6 @@ export class Uploader {
      */
     if(query(req.query, "autoresize") === 'true') {
       const resizeData = await this.uploadWithResizer(req.files[0])
-      console.log(resizeData)
       for (let index = 0; index < resizeData.length; index++) {
         promises.push(this.uploadPart({
           originalname: resizeData[index].target.split('/').pop(),

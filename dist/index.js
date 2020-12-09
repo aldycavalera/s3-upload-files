@@ -70,7 +70,7 @@ var Uploader = (function () {
                     cb(null, file.originalname);
                 },
             });
-            var upload = multer({ storage: storage, limits: { fileSize: 2000 * 1024 * 1024 } });
+            var upload = multer({ storage: storage, limits: { fileSize: 1000 * 1024 * 1024 } });
             app.post("/upload", upload.array("files"), _this.post);
         };
         this.checkBucket = function (name) {
@@ -191,6 +191,7 @@ var Uploader = (function () {
                     case 0:
                         promises = [];
                         folder = "";
+                        req.socket.setTimeout(10 * 60 * 1000);
                         folder = checker_1.query(req.query, "folder");
                         conf.image.bulk_resize = checker_1.query(req.query, "bulk_image");
                         if (checker_1.query(req.query, "ACL") != false &&
@@ -201,7 +202,6 @@ var Uploader = (function () {
                         return [4, this.uploadWithResizer(req.files[0])];
                     case 1:
                         resizeData = _c.sent();
-                        console.log(resizeData);
                         for (index = 0; index < resizeData.length; index++) {
                             promises.push(this.uploadPart({
                                 originalname: resizeData[index].target.split('/').pop(),
