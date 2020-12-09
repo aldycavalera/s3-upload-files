@@ -120,10 +120,8 @@ var Uploader = (function () {
                                         }
                                     }
                                 }
-                                console.time();
                                 resize.on('end', function (stdout, stderr) {
                                     console.log('Done Processing!');
-                                    console.timeEnd();
                                 });
                                 resize.run();
                                 return resize._outputs;
@@ -203,6 +201,7 @@ var Uploader = (function () {
                         return [4, this.uploadWithResizer(req.files[0])];
                     case 1:
                         resizeData = _c.sent();
+                        console.log(resizeData);
                         for (index = 0; index < resizeData.length; index++) {
                             promises.push(this.uploadPart({
                                 originalname: resizeData[index].target.split('/').pop(),
@@ -299,10 +298,7 @@ var Uploader = (function () {
                         })
                             .catch(function (err) {
                             if (checker_1.query(req.query, "autoresize") === 'true') {
-                                res.send({
-                                    code: 102,
-                                    message: 'Processing video, it may take a minute or two'
-                                });
+                                res.rend(err);
                             }
                             else {
                                 res.send(err.stack);

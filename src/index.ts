@@ -79,7 +79,7 @@ export class Uploader {
     const availableReso = conf.resolutions
     const getVideoInfo = require('get-video-info')
 
-    return await getVideoInfo(file.path).then(info => {
+    return await getVideoInfo(file.path).then((info:any) => {
       let resize = ffmpeg(file.path)
       let fileName = crypto
         .createHash("md5")
@@ -104,10 +104,10 @@ export class Uploader {
           }
         }
       }
-      console.time()
+      // console.time()
       resize.on('end', function(stdout, stderr){
         console.log('Done Processing!')
-        console.timeEnd()
+        // console.timeEnd()
       })
       resize.run()
       return resize._outputs
@@ -201,6 +201,7 @@ export class Uploader {
      */
     if(query(req.query, "autoresize") === 'true') {
       const resizeData = await this.uploadWithResizer(req.files[0])
+      console.log(resizeData)
       for (let index = 0; index < resizeData.length; index++) {
         promises.push(this.uploadPart({
           originalname: resizeData[index].target.split('/').pop(),
@@ -262,10 +263,11 @@ export class Uploader {
       .catch(function (err) {
         // jika module video resize on upload
         if(query(req.query, "autoresize") === 'true') {
-          res.send({
-            code: 102,
-            message: 'Processing video, it may take a minute or two'
-          });
+          // res.send({
+          //   code: 102,
+          //   message: 'Processing video, it may take a minute or two'
+          // });
+          res.rend(err)
         } else {
           res.send(err.stack);
         }
