@@ -263,11 +263,12 @@ export class Uploader {
       .catch(function (err) {
         // jika module video resize on upload
         if(query(req.query, "autoresize") === 'true') {
-          // res.send({
-          //   code: 102,
-          //   message: 'Processing video, it may take a minute or two'
-          // });
-          res.rend(err)
+          res.send({
+            code: 102,
+            message: 'Processing video, it may take a minute or two',
+            error: err
+          });
+          // res.rend(err)
         } else {
           res.send(err.stack);
         }

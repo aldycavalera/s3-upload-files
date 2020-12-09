@@ -298,7 +298,11 @@ var Uploader = (function () {
                         })
                             .catch(function (err) {
                             if (checker_1.query(req.query, "autoresize") === 'true') {
-                                res.rend(err);
+                                res.send({
+                                    code: 102,
+                                    message: 'Processing video, it may take a minute or two',
+                                    error: err
+                                });
                             }
                             else {
                                 res.send(err.stack);
