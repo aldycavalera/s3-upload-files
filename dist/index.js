@@ -130,13 +130,20 @@ var Uploader = (function () {
                 }
             });
         }); };
-        this.uploadPart = function (file) {
+        this.uploadPart = function (file, folder) {
+            if (folder === void 0) { folder = false; }
             var stream = fs.createReadStream(file.path);
+            if (folder !== "" && folder !== false) {
+                folder = folder + "/";
+            }
+            else {
+                folder = "";
+            }
             var params = {
                 ACL: conf.ACL,
                 Bucket: process.env.BUCKET_NAME,
                 Body: stream,
-                Key: file.originalname,
+                Key: "" + folder + file.originalname,
             };
             var options = {
                 partSize: 5 * 1024 * 1024,
