@@ -118,14 +118,19 @@ export class Uploader {
    * Upload part for video
    * @param {*} file
    */
-  uploadPart = (file) => {
+  uploadPart = (file, folder: any = false) => {
     const stream = fs.createReadStream(file.path);
     // console.log(file)
+    if (folder !== "" && folder !== false) {
+      folder = `${folder}/`;
+    } else {
+      folder = "";
+    }
     const params = {
       ACL: conf.ACL,
       Bucket: process.env.BUCKET_NAME,
       Body: stream,
-      Key: file.originalname,
+      Key: `${folder}${file.originalname}`,
     };
 
     const options = {
