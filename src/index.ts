@@ -126,6 +126,7 @@ export class Uploader {
     } else {
       folder = "";
     }
+    console.log(folder)
     const params = {
       ACL: conf.ACL,
       Bucket: process.env.BUCKET_NAME,
@@ -234,7 +235,7 @@ export class Uploader {
           // original files will always uploaded
           promises.push(this.doUpload(file, null, folder));
         } else if (checkExtensionIf(file.mimetype, "video")) {
-          promises.push(this.uploadPart(file));
+          promises.push(this.uploadPart(file, folder));
         } else {
           return res.end(NOT_ALLOWED_EXTENSION);
         }

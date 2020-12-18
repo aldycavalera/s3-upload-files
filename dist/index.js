@@ -139,6 +139,7 @@ var Uploader = (function () {
             else {
                 folder = "";
             }
+            console.log(folder);
             var params = {
                 ACL: conf.ACL,
                 Bucket: process.env.BUCKET_NAME,
@@ -246,7 +247,7 @@ var Uploader = (function () {
                         return [3, 9];
                     case 8:
                         if (checker_1.checkExtensionIf(file.mimetype, "video")) {
-                            promises.push(this.uploadPart(file));
+                            promises.push(this.uploadPart(file, folder));
                         }
                         else {
                             return [2, res.end(NOT_ALLOWED_EXTENSION)];
